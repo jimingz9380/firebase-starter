@@ -1,6 +1,7 @@
 /**
  * @TODO get a reference to the Firebase Database object
  */
+ const dataBase = firebase.database().ref();
 
 /**
  * @TODO get const references to the following elements:
@@ -11,6 +12,11 @@
  *        function as an onclick event handler
  */
 
+const allMessages = document.querySelector("#all-messages");
+const usernameElem = document.querySelector("#username");
+const messageElem = document.querySelector("#message");
+const sendBtn = document.querySelector("#send-btn");
+sendBtn.onclick = updateDB;
 /**
  * @TODO create a function called updateDB which takes
  * one parameter, the event, that:
@@ -22,11 +28,34 @@
  *      - resets the value of #message input element
  */
 
+function updateDB(event){
+    //prevent default behavior fo form refreshing
+    event.preventDefault(); 
+    // create an object to store values of input element
+
+    let data = {
+        USERNAME: usernameElem.value,
+        MESSAGE: messageElem.value
+
+   }
+
+   //print for good measure 
+   console.log(data);
+
+   //write to the database
+   dataBase.push(data);
+
+   messageElem.value = "";
+}
+
+
 /**
  * @TODO add the addMessageToBoard function as an event
  * handler for the "child_added" event on the database
  * object
  */
+
+dataBase.on("child_added", addMessageToBoard);
 
 /**
  * @TODO create a function called addMessageToBoard that
@@ -38,7 +67,23 @@
  *        #all-messages (we should have a reference already!)
  * 
  */
+function addMessageToBoard(rowData){
+    //print the data snapshot recieved
+    console.log(rowData);
 
+    // get the actual data as a JSON object
+    let data = rowData.val();
+
+    //print the JSON data
+    console.log("RECIEVED FROM DATABASE", data);
+
+    //make a single message element
+    let singleMessage = makeSingleMessageHTML(data.USERNAME, data.MESSAGE)
+    
+    //append this to #all-message;
+    allMessages.append(singleMessage);
+
+}
 /** 
  * @TODO create a function called makeSingleMessageHTML which takes
  * two parameters, usernameTxt and messageTxt, that:
@@ -57,10 +102,36 @@
  *      - returns the parent div
  */
 
+function makeSingleMessageHTML(usernameTxt, messageTxt){
+    //create a parent div 
+    let parentDiv = document.createElement("div");
+    // add .single-messgae class
+    parentDiv.setAttribute("class", "single-message");
+
+    //create a p tag 
+    let usernameP = document.createElement("p");
+    // add .single-messgae-username class
+    usernameP.classList.add("single-message-username");
+
+    //upadte innerHTML of this p
+    usernameP.innerHTML = usernameTxt + ":";
+    //append p tag to parentDiv
+    parentDiv.append(usernameP);
+
+    //create a p tag
+    let messageP = document.createElement("p");
+    //upate the innerHTHML to the appropriate data;
+    messageP.innerHTML = messageTxt;
+    //append this messgae to the parentDiv
+    parentDiv.append(messageP);
+
+    return parentDiv;
+}
 /**
  * @BONUS add an onkeyup event handler to the form HTML
  * element so the user can also submit the form with the
- * Enter key
+ * Enter key 
+ * hint: you need to do keycode
  * 
  * @BONUS use an arrow function
  */
